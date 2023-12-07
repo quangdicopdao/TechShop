@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "680157239962",
+    "project_id": "techsh-27b5b",
+    "storage_bucket": "techsh-27b5b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680157239962:android:8e0104116fa26d7569dd23",
+        "android_client_info": {
+          "package_name": "com.techshop"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLA2CGqZ9SVc4WGjeeYPchbw-1fgOpkuI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
