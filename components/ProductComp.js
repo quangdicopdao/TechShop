@@ -6,11 +6,11 @@ function ProductComp({srcImg, name, sold, price, onClick}) {
     return ( 
             <TouchableOpacity style={styles.container} onPress={onClick}>
                     <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
-                        <Image source={srcImg} style={styles.img}/>
+                        <Image source={{uri:srcImg}} style={styles.img}/>
                         <Text style={styles.txtName}>{name}</Text>
                       <View style={styles.wrap}>
                             <Text style={styles.txtPrice}>đ{price}</Text>
-                            <Text style={styles.txtSold}>Đã bán{sold}</Text>
+                            <Text style={styles.txtSold}>Đã bán: {sold}</Text>
                       </View>
                     </View>
             </TouchableOpacity>

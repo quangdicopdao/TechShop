@@ -7,6 +7,7 @@ import Signup from "./Signup";
 import Setting from "./Setting";
 import Search from "./Search";
 import Love from "./Love";
+import Categories from "./Categories";
 export {
     Login,
     Signup,
@@ -16,5 +17,6 @@ export {
     CheckOut,
     Setting,
     Search,
-    Love
+    Love,
+    Categories,
 }

@@ -1,14 +1,37 @@
-    import React from "react";
-    import {View, StyleSheet,Text, TouchableOpacity, ScrollView} from 'react-native'
+    import React, {useEffect, useState} from "react";
+    import {View, StyleSheet,Text, TouchableOpacity, ScrollView,FlatList} from 'react-native'
     import Icon from 'react-native-vector-icons/MaterialIcons'; 
     import { ItemCheckOut } from "../components";
 
-    function CheckOut() {
+    function CheckOut({route}) {
+        const { cartData, checkedItems, totalAmount } = route.params;
+        const [feeShip, setFeeShip] = useState(30000); // Phí vận chuyển mặc định
+        const [feePro, setFeePro] = useState(9000); // Phí sản phẩm mặc định
+        const [totalProductAmount, setTotalProductAmount] = useState(0);
+        const [totalShippingFee, setTotalShippingFee] = useState(feeShip);
+        const [total, setTotal] = useState(totalProductAmount + totalShippingFee);
+
+        useEffect(() => {
+            // Tính tổng giá trị của tất cả sản phẩm
+            const productAmount = cartData.reduce((acc, item) => acc + item.price , 0);
+            setTotalProductAmount(productAmount);
+    
+            // Cập nhật tổng thanh toán
+            const total = productAmount + totalShippingFee;
+            setTotal(total);
+    
+            console.log("Nhận dữ liệu trong CheckOut:", cartData, checkedItems, totalAmount);
+        }, [cartData, checkedItems, totalAmount, totalShippingFee]);
+
+        // useEffect(() => {
+        //     // Xử lý dữ liệu ở đây
+        //     console.log("Received data in CheckOut:", cartData, checkedItems, totalAmount);
+        //   }, [cartData, checkedItems, totalAmount]);
         const numberWithCommas = (number) => {
             return number.toLocaleString('vi-VN'); // 'vi-VN' là mã ngôn ngữ của Tiếng Việt
         };
         return (
-          <View style={{flex:1}}>
+          <View style={{flex:1,backgroundColor:'#fff'}}>
                <ScrollView >
                 {/* address */}
                                 <View style={{flexDirection:'row',alignItems:'center'}}>
@@ -25,14 +48,23 @@
                                 </View>
                             </TouchableOpacity>
                             {/* product */}
-                            <ItemCheckOut/>
-                            <ItemCheckOut/>
-                            <ItemCheckOut/>
-                            <ItemCheckOut/>
-                            <ItemCheckOut/>
-                            <ItemCheckOut/>
+                            <FlatList
+                            data={cartData}
+                            keyExtractor={(item, index) => (item && item.id ? item.id.toString() : index.toString())}
+                            renderItem={({ item }) => (
+                                <ItemCheckOut
+                                    name={item.name}
+                                    price={item.price}
+                                    srcImg={item.img}
+                                    cate={item.category}
+                                    quantity={item.quantity}
+                                    shop={item.shop}
+                                    fee={feeShip}
+                                />
+                            )}
+                            />
                            
-                   {/* bill                  */}
+                   {/* bill*/}
                    <View style={{justifyContent:'space-around',paddingTop:20,paddingBottom:20}}>
                         <View style={{flexDirection:'row',alignItems:'center',marginLeft:10}}>
                             <Icon name='note-alt' size={30} color='#000'/>
@@ -40,15 +72,15 @@
                         </View>
                         <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginLeft:10,marginRight:10}}>
                             <Text>Tổng tiền hàng</Text>
-                            <Text>đ{numberWithCommas(200000)}</Text>
+                            <Text>đ{numberWithCommas(totalProductAmount)}</Text>
                         </View>
                         <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginLeft:10,marginRight:10}}>
                             <Text>Tổng phí vận chuyển</Text>
-                            <Text>đ{numberWithCommas(30000)}</Text>
+                            <Text>đ{numberWithCommas(totalShippingFee)}</Text>
                         </View>
                         <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginLeft:10,marginRight:10}}>
                             <Text style={{fontSize:20,fontWeight:'bold',color:'#000'}}>Tổng thanh toán</Text>
-                            <Text style={{fontSize:20,fontWeight:'bold',color:'red'}}>đ{numberWithCommas(23000000)}</Text>
+                            <Text style={{fontSize:20,fontWeight:'bold',color:'red'}}>đ{numberWithCommas(total)}</Text>
                         </View>
                    </View>
                     

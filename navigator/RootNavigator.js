@@ -12,7 +12,8 @@ import {
   Cart,
   CheckOut,
   Search,
-  Love
+  Love,
+  Categories,
 } from '../screens'
 
 // Tạo Stack Navigator
@@ -56,6 +57,7 @@ const RootNavigator = () => {
         <Stack.Screen name="Login" component={Login} sc/>
         <Stack.Screen name="Signup" component={Signup} />
         <Stack.Screen name="Setting" component={Setting} />
+        <Stack.Screen name="Categories" component={Categories} />
         <Stack.Screen name="Cart" component={Cart} options={{headerShown:true,title:'Giỏ hàng'}}/>
         <Stack.Screen name="CheckOut" component={CheckOut} options={{headerShown:true,title:'Thanh toán'}} />
       </Stack.Navigator>

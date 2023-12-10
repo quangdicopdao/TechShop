@@ -1,27 +1,34 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity,FlatList,Image } from "react-native";
 import {Button} from 'react-native-paper'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; 
 import { CategoriesComp,ProductComp } from "../components";
 import { useNavigation } from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore';
 
 function Home() {
     const navigation = useNavigation();
-
+    const [products, setProducts] = useState([]);
   const numberWithCommas = (number) => {
         return number.toLocaleString('vi-VN'); // 'vi-VN' là mã ngôn ngữ của Tiếng Việt
     };
 
-    const products = [
-        {id:1, name: 'Laptop MSI morden 15', price:numberWithCommas(10000111000), sold: '1,2k', srcImg: require('../assets/test/msi.png') },
-        {id:2, name: 'Laptop MSI morden 13', price:numberWithCommas(100003000), sold: '1,2k', srcImg: require('../assets/test/msi.png') },
-        {id:3, name: 'Laptop MSI morden 12', price:numberWithCommas(102000000), sold: '1,2k', srcImg: require('../assets/test/msi.png') },
-        {id:4, name: 'Laptop MSI morden 12', price:numberWithCommas(100200000), sold: '1,2k', srcImg: require('../assets/test/msi.png') },
-        {id:5, name: 'Laptop MSI morden 12', price:numberWithCommas(100200000), sold: '1,2k', srcImg: require('../assets/test/msi.png') },
-        {id:66, name: 'Laptop MSI morden 12', price:numberWithCommas(100200000), sold: '1,2k', srcImg: require('../assets/test/msi.png') },
-        {id:7, name: 'Laptop MSI morden 12', price:numberWithCommas(100200000), sold: '1,2k', srcImg: require('../assets/test/msi.png') },
-        // Add more products as needed
-      ];
+    useEffect(() => {
+        // Lắng nghe sự thay đổi của collection "products"
+        const unsubscribe = firestore().collection("products").onSnapshot((snapshot) => {
+            const productsData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setProducts(productsData);
+        });
+
+        // Hủy đăng ký lắng nghe khi component unmount
+        return () => unsubscribe();
+    }, []); // Dependency array là rỗng, vì chúng ta chỉ muốn đăng ký một lần khi component mount
+      
+      // Sử dụng state "products" trong các phần khác của component
+      
     return ( 
     <View style={styles.container}>
         {/* header */}
@@ -39,11 +46,11 @@ function Home() {
                         <View style={styles.wrapCate} >
                             <Text style={styles.titleTxt}>Danh mục</Text>
                             <ScrollView contentContainerStyle={styles.wrapCompCate} horizontal>
-                                <CategoriesComp name='Tai nghe' srcImg={require('../assets/test/tainghe.png')}/>
-                                <CategoriesComp name='Chuột' srcImg={require('../assets/test/chuot.png')}/>
-                                <CategoriesComp name='Laptop' srcImg={require('../assets/test/laptop.png')}/>
-                                <CategoriesComp name='Bàn phím' srcImg={require('../assets/test/banphim.png')}/>
-                                <CategoriesComp name='Máy ảnh' srcImg={require('../assets/test/mayanh.png')}/>
+                                <CategoriesComp name='Tai nghe' srcImg={require('../assets/test/tainghe.png')} category='TaiNghe'/>
+                                <CategoriesComp name='Chuột' srcImg={require('../assets/test/chuot.png')} category='Chuot'/>
+                                <CategoriesComp name='Laptop' srcImg={require('../assets/test/laptop.png')} category='Laptop'/>
+                                <CategoriesComp name='Bàn phím' srcImg={require('../assets/test/banphim.png')} category='BanPhim'/>
+                                <CategoriesComp name='Máy ảnh' srcImg={require('../assets/test/mayanh.png')} category='MayAnh'/>
                             </ScrollView>
                         </View>
                         {/* load product */}
@@ -52,11 +59,11 @@ function Home() {
                             {products.map(product => (
                                 <ProductComp
                                     key={product.id}
-                                    name={product.name}
-                                    price={product.price}
+                                    name={product.productName}
+                                    price={numberWithCommas(product.price)}
                                     sold={product.sold}
-                                    srcImg={product.srcImg}
-                                    onClick={()=> (navigation.navigate('Details'))}
+                                    srcImg={product.imageUrl150}
+                                    onClick={()=> (navigation.navigate('Details',{product}))}
                                 />        
                                         
                             ))}                     

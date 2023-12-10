@@ -2,7 +2,7 @@ import React from "react";
 import {View, StyleSheet,Text, TouchableOpacity, ScrollView} from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'; 
 
-function Tranfer() {
+function Tranfer({price,quantity,fee}) {
     const numberWithCommas = (number) => {
         return number.toLocaleString('vi-VN'); // 'vi-VN' là mã ngôn ngữ của Tiếng Việt
     };
@@ -29,7 +29,7 @@ function Tranfer() {
                      </View>
                  </View>
                  <TouchableOpacity style={{flexDirection:'row'}}>    
-                     <Text>đ {numberWithCommas(8000)}</Text>
+                     <Text>đ {numberWithCommas(fee)}</Text>
                      <Icon name='keyboard-arrow-right' size={20} color='#ccc'/>
                  </TouchableOpacity>
              </View>
@@ -40,8 +40,8 @@ function Tranfer() {
                  borderBottomWidth:1,
                  borderColor:'#ccc',
                  flexDirection:'row',justifyContent:'space-between',marginLeft:10,marginRight:10,marginTop:20}}>
-                 <Text>Tổng số tiền ̣(1 sản phẩm)</Text>
-                 <Text style={{fontSize:20,fontWeight:'bold',color:'red'}}>đ{numberWithCommas(200000000)}</Text>
+                 <Text>Tổng số tiền ̣({quantity} sản phẩm)</Text>
+                 <Text style={{fontSize:20,fontWeight:'bold',color:'red'}}>đ{numberWithCommas(price)}</Text>
              </View>
        </View>
       );

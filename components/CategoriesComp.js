@@ -1,8 +1,10 @@
 import React from "react";
 import { View,StyleSheet, TouchableOpacity,Image,Text } from "react-native";
-function CategoriesComp({name,srcImg}) {
+import { useNavigation } from "@react-navigation/native";
+function CategoriesComp({name,srcImg,category}) {
+    const navigation = useNavigation()
     return ( 
-       <TouchableOpacity style={styles.container}>
+       <TouchableOpacity style={styles.container} onPress={()=>{navigation.navigate('Categories',{category:category})}}>
             <Image source={srcImg} style={styles.img}/>
            <View style={{alignSelf:'center'}}> 
                 <Text style={styles.txt}>{name}

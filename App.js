@@ -72,7 +72,7 @@ const initial = async () => {
 
 
 const App = () => {
-initial();
+// initial();
   
 const [profileData, setProfileData] = useState(0);
 const [productsData, setProductsData] = useState([]);

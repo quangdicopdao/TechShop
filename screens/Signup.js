@@ -1,23 +1,40 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Image, Text,  } from "react-native";
+import { View, StyleSheet, Image, Text, Alert } from "react-native";
 import {TextInput,Button} from 'react-native-paper'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; 
 import { Formik } from 'formik';
 import * as Yup from 'yup'
-
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { useNavigation } from "@react-navigation/native";
 function Signup() {
-    const [show, setShow] = useState(false)
-
+    const [show, setShow] = useState(true)
+    const navigation = useNavigation()
     //signup
-    const handleSignUp = async values =>{
-        const {email, password} = values
-                    auth()
-                    .createUserWithEmailAndPassword(email, password)
-                    .then(
-                        () => navigation.navigate('Login')
-                    )
-                    .catch(err => console.log(err));
-            }
+    const handleSignUp = async values => {
+        const { email, password } = values;
+      
+        try {
+          // Đăng ký người dùng bằng email và password
+          const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      
+          // Lấy UID của người dùng vừa đăng ký
+          const userId = userCredential.user.uid;
+      
+          // Thêm email vào collection 'users' với email làm ID của document
+          await firestore().collection('users').doc(email).set({
+            email: email,
+            userId: userId,
+            // Các trường thông tin khác nếu cần
+          });
+      
+          // Đăng nhập thành công, chuyển hướng đến trang đăng nhập
+          navigation.navigate('Login');
+        } catch (error) {
+          console.error('Error signing up:', error);
+          Alert.alert('Thông báo',error)
+        }
+      };    
      //validate
      const validateSchema = Yup.object().shape({
         email: Yup.string().email('Email không hợp lệ').required('Vui lòng nhập email'),
@@ -53,7 +70,7 @@ function Signup() {
                 onBlur={handleBlur('email')}
                 style={styles.txtInput}
                 />
-                    {touched.email && errors.email && <Text style={{ color: 'red' }}>{errors.email}</Text>}
+                    {touched.email && errors.email && <Text style={{ color: 'red',marginLeft:15 }}>{errors.email}</Text>}
 
                 
                 <TextInput
@@ -67,7 +84,7 @@ function Signup() {
                 secureTextEntry={show}
                 right={<TextInput.Icon icon= 'eye' onPress={()=> setShow(!show)}/>}
                 />
-                    {touched.password && errors.password && <Text style={{ color: 'red' }}>{errors.password}</Text>}
+                    {touched.password && errors.password && <Text style={{ color: 'red',marginLeft:15 }}>{errors.password}</Text>}
 
     
                 <TextInput
@@ -81,7 +98,7 @@ function Signup() {
                 secureTextEntry={show}
                 right={<TextInput.Icon icon= 'eye' onPress={()=> setShow(!show)}/>}
                 />
-                {touched.confirmpassword && errors.confirmpassword && <Text style={{ color: 'red' }}>{errors.confirmpassword}</Text>}
+                {touched.confirmpassword && errors.confirmpassword && <Text style={{ color: 'red',marginLeft:15 }}>{errors.confirmpassword}</Text>}
 
                 <Text 
                 style={styles.txtLink}

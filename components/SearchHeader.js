@@ -3,7 +3,7 @@ import {View,TouchableOpacity,TextInput,Image,Text} from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; 
 import { useNavigation } from '@react-navigation/native';
 
-function SearchHeader() {
+function SearchHeader({searchKeyword,setSearchKeyword}) {
     const navigation = useNavigation();
 
     return (
@@ -50,6 +50,8 @@ function SearchHeader() {
                             backgroundColor: '#fff',
                             paddingLeft: 20,
                         }}
+                        value={searchKeyword}
+                        onChangeText={(text) => setSearchKeyword(text)}
                     />
                     <TouchableOpacity>
                         <Image source={require('../assets/test/searchicon.png')} style={{ height: 35, width: 35, marginRight: 10, }} />

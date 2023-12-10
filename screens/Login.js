@@ -91,7 +91,7 @@ function Login() {
                         
                     </Text>
                         <Button  onPress={()=>{Alert.alert('click')}}>
-                            <Text style={styles.txtLink}>Đăng ký ngay</Text>
+                            <Text style={styles.txtLink} onPress={()=>{navigation.navigate('Signup')}}>Đăng ký ngay</Text>
                         </Button>
                 </View>
             </View>

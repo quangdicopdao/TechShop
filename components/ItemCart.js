@@ -1,66 +1,102 @@
-import React from "react";
-import {View, StyleSheet, Text, Image, TouchableOpacity} from 'react-native'
-import { Button, Checkbox } from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; 
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Text, Image, TouchableOpacity } from "react-native";
+import { Checkbox } from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import firestore from "@react-native-firebase/firestore";
 
-function ItemCart({namePro,nameShop, price, category,srcImg, onClick,isChecked, onToggleCheck}) {
-    const [checked, setChecked] = React.useState(false);
-    const [quantity, setQuantity] = React.useState(1)
-    const [totalPrice, setTotalPrice] = React.useState(price);
+function ItemCart({
+  namePro,
+  nameShop,
+  price,
+  category,
+  srcImg,
+  isChecked,
+  onToggleCheck,
+  proquantity,
+  onRemove,
+  updateCartItem,
+  productId,
+}) {
+  const [quantity, setQuantity] = useState(proquantity);
+  const [totalPrice, setTotalPrice] = useState(price);
 
-    const numberWithCommas = (number) => {
-        return number.toLocaleString('vi-VN'); // 'vi-VN' là mã ngôn ngữ của Tiếng Việt
-    };
-    const updateTotalPrice = (newQuantity) => {
-        setQuantity(newQuantity);
-        setTotalPrice(price * newQuantity);
-    };
-    return (
-        <View style={styles.container}>
-            <View style={styles.wrapHeader}>
-                <Checkbox
-                status={isChecked ? 'checked' : 'unchecked'}
-                 onPress={() => {
-                    onToggleCheck()
-                }}
-                />
-                <Text style={styles.txtName}>{nameShop}</Text>
-            </View>
-            <View style={styles.wrapProduct}>
-                <Checkbox
-                status={isChecked ? 'checked' : 'unchecked'}
-                 onPress={() => {
-                   onToggleCheck()
-                }}
-                />
-                <Image source={srcImg}/>
-                <View>
-                    <Text style={styles.name}>{namePro}</Text>
-                    <Text style={styles.cate}>{category}</Text>
-                    <Text style={styles.price}>{numberWithCommas(totalPrice)}</Text>
+  const numberWithCommas = (number) => {
+    if (number !== undefined && number !== null) {
+      return number.toLocaleString("vi-VN");
+    } else {
+      return "N/A";
+    }
+  };
 
-                    <View style={styles.wrapBtn}>
-                        <TouchableOpacity  style={styles.btnMP} onPress={()=> {
-                            if(quantity>1){
+  // Trong component ItemCart
+const updateQuantityAndPrice = (newQuantity) => {
+  setQuantity(newQuantity);
 
-                                setQuantity(quantity-1)
-                                updateTotalPrice(quantity-1)
-                            }
-                        }}>
-                            <Icon name='minus'size={20} color="#000" style={styles.icon}/>
-                        </TouchableOpacity>
-                        <Text style={styles.quantity}>{quantity}</Text>
-                        <TouchableOpacity  style={styles.btnMP} onPress={()=> {
-                            setQuantity(quantity+1)
-                            updateTotalPrice(quantity+1)
-                            }}>
-                            <Icon name='plus'size={20} color="#000" style={styles.icon}/>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
+  // Tính toán giá mới dựa trên số lượng mới
+  const newPrice = newQuantity * price;
+  setTotalPrice(newPrice);
+
+  // Gọi hàm callback từ props để cập nhật giỏ hàng trong component cha
+  updateCartItem(productId, newQuantity, newPrice);
+};
+
+  
+  
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.wrapHeader}>
+        <View style={{flexDirection:'row'}}>
+          <Checkbox
+            status={isChecked ? "checked" : "unchecked"}
+            onPress={() => {
+              onToggleCheck();
+            }}
+          />
+          <Text style={styles.txtName}>{nameShop}</Text>
         </View>
-      );
+        <TouchableOpacity onPress={onRemove}>
+            <Text style={{fontSize:20,color:'red',marginRight:10}}>Xóa</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.wrapProduct}>
+        <Checkbox
+          status={isChecked ? "checked" : "unchecked"}
+          onPress={() => {
+            onToggleCheck();
+          }}
+        />
+        <Image source={{ uri: srcImg }} style={styles.img} />
+        <View>
+          <Text style={styles.name}>{namePro}</Text>
+          <Text style={styles.cate}>{category}</Text>
+          <Text style={styles.price}>{numberWithCommas(totalPrice)}</Text>
+
+          <View style={styles.wrapBtn}>
+            <TouchableOpacity
+              style={styles.btnMP}
+              onPress={() => {
+                if (quantity > 1) {
+                  updateQuantityAndPrice(quantity - 1);
+                }
+              }}
+            >
+              <Icon name="minus" size={20} color="#000" style={styles.icon} />
+            </TouchableOpacity>
+            <Text style={styles.quantity}>{quantity}</Text>
+            <TouchableOpacity
+              style={styles.btnMP}
+              onPress={() => {
+                updateQuantityAndPrice(quantity + 1);
+              }}
+            >
+              <Icon name="plus" size={20} color="#000" style={styles.icon} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 }
 const styles = StyleSheet.create({
     container:{
@@ -68,7 +104,9 @@ const styles = StyleSheet.create({
         backgroundColor:'#fff'
     },
     wrapHeader:{
-        flexDirection:'row'
+        flexDirection:'row',
+        alignItems:'center',
+        justifyContent: 'space-between',
     },
     txtName:{
         fontSize:20,
@@ -116,7 +154,13 @@ const styles = StyleSheet.create({
         alignSelf:'center',
         alignItems:'center',
         justifyContent:'center'
-    }
+    },
+    img: {
+        width: 150,
+        height: 150,
+        resizeMode: 'cover',
+        alignSelf:'center'
+    },
 })
 
 export default ItemCart;

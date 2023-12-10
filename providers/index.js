@@ -1,12 +1,12 @@
-import { createContext, useContext, useReducer, useMemo,useEffect } from "react";
+import { createContext, useContext, useReducer, useMemo } from "react";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 
+// import PropTypes from "prop-types";
 // Create MyContext
 const MyContext = createContext();
 // Setting custom name for the context 
 MyContext.displayName = "MyContextContext";
-
 // React reducer
 function reducer(state, action) {
   switch (action.type) {
@@ -18,21 +18,16 @@ function reducer(state, action) {
     }
   }
 }
-
 // React context provider
 function MyContextControllerProvider({ children }) {
   const initialState = {
     userLogin: null,
   };
   const [controller, dispatch] = useReducer(reducer, initialState);
-
-  // useMemo is used to memoize the context value and avoid unnecessary re-renders
   const value = useMemo(() => [controller, dispatch], [controller, dispatch]);
-
   return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
 }
-
-// React custom hook for using context
+//React custom hook for using context
 function useMyContextController() {
   const context = useContext(MyContext);
   if (!context) {
@@ -42,26 +37,26 @@ function useMyContextController() {
   }
   return context;
 }
+const USERS = firestore().collection("users")
+const login = (dispatch,email, password) =>{
+  if(!email || !password) {
+    alert('Vui lòng điền đủ thông tin đăng nhập')
+  }
+  else{
 
-const USERS = firestore().collection("USER");
-
-// Function for login
-const login = (dispatch, email, password) => {
-  if (!email || !password) {
-    alert('Vui lòng điền đủ thông tin đăng nhập');
-  } else {
-    auth()
-      .signInWithEmailAndPassword(email, password)
-      .then(() =>
-        USERS.doc(email).onSnapshot(u => {
+    auth().signInWithEmailAndPassword(email,password)
+    .then(
+      ()=>
+        USERS.doc(email)
+        .onSnapshot(u => {
           const value = u.data();
           console.log("Đăng Nhập Thành Công Với User : ", value);
-          dispatch({ type: "USER_LOGIN", value });
+          dispatch({type: "USER_LOGIN", value});
         })
-      )
-      .catch(e => alert("Sai thông tin đăng nhập. Vui lòng nhập lại!"));
+    )
+    .catch(e => alert("Sai thông tin đăng nhập. Vui lòng nhập lại!") )
   }
-};
+}
 
 export {
   MyContextControllerProvider,
