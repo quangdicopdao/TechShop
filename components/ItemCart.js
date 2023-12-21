@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, Image, TouchableOpacity } from "react-native";
 import { Checkbox } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import firestore from "@react-native-firebase/firestore";
-
+import {Divider} from "react-native-paper";
+import { TextInput } from "react-native-gesture-handler";
+import { Voucher } from ".";
+import { whiteColor } from "../assets/color";
 function ItemCart({
   namePro,
   nameShop,
@@ -44,57 +46,65 @@ const updateQuantityAndPrice = (newQuantity) => {
   
 
   return (
-    <View style={styles.container}>
-      <View style={styles.wrapHeader}>
-        <View style={{flexDirection:'row'}}>
+    <View>
+      <View style={styles.container}>
+        <View style={styles.wrapHeader}>
+          <View style={{flexDirection:'row'}}>
+            <Checkbox
+              status={isChecked ? "checked" : "unchecked"}
+              onPress={() => {
+                onToggleCheck();
+              }}
+            />
+            <Text style={styles.txtName}>{nameShop}</Text>
+          </View>
+          <TouchableOpacity onPress={onRemove}>
+              {/* <Text style={{fontSize:20,color:'red',marginRight:10}}>Xóa</Text> */}
+              <Icon name='trash-can' size={30} color='red'/>
+          </TouchableOpacity>
+        </View>
+        <Divider/>
+        <View style={styles.wrapProduct}>
           <Checkbox
             status={isChecked ? "checked" : "unchecked"}
             onPress={() => {
               onToggleCheck();
             }}
           />
-          <Text style={styles.txtName}>{nameShop}</Text>
-        </View>
-        <TouchableOpacity onPress={onRemove}>
-            <Text style={{fontSize:20,color:'red',marginRight:10}}>Xóa</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.wrapProduct}>
-        <Checkbox
-          status={isChecked ? "checked" : "unchecked"}
-          onPress={() => {
-            onToggleCheck();
-          }}
-        />
-        <Image source={{ uri: srcImg }} style={styles.img} />
-        <View>
-          <Text style={styles.name}>{namePro}</Text>
-          <Text style={styles.cate}>{category}</Text>
-          <Text style={styles.price}>{numberWithCommas(totalPrice)}</Text>
-
-          <View style={styles.wrapBtn}>
-            <TouchableOpacity
-              style={styles.btnMP}
-              onPress={() => {
-                if (quantity > 1) {
-                  updateQuantityAndPrice(quantity - 1);
-                }
-              }}
-            >
-              <Icon name="minus" size={20} color="#000" style={styles.icon} />
-            </TouchableOpacity>
-            <Text style={styles.quantity}>{quantity}</Text>
-            <TouchableOpacity
-              style={styles.btnMP}
-              onPress={() => {
-                updateQuantityAndPrice(quantity + 1);
-              }}
-            >
-              <Icon name="plus" size={20} color="#000" style={styles.icon} />
-            </TouchableOpacity>
+          <Image source={{ uri: srcImg }} style={styles.img} />
+          <View>
+            <Text style={styles.name}>{namePro}</Text>
+            <Text style={styles.cate}>{category}</Text>
+            <Text style={styles.price}>{numberWithCommas(totalPrice)}</Text>
+  
+            <View style={styles.wrapBtn}>
+              <TouchableOpacity
+                style={styles.btnMP}
+                onPress={() => {
+                  if (quantity > 1) {
+                    updateQuantityAndPrice(quantity - 1);
+                  }
+                }}
+              >
+                <Icon name="minus" size={20} color="#000" style={styles.icon} />
+              </TouchableOpacity>
+              <TextInput 
+              keyboardType="numeric"
+              style={styles.quantity}>{quantity}</TextInput>
+              <TouchableOpacity
+                style={styles.btnMP}
+                onPress={() => {
+                  updateQuantityAndPrice(quantity + 1);
+                }}
+              >
+                <Icon name="plus" size={20} color="#000" style={styles.icon} />
+              </TouchableOpacity>
+            </View>
           </View>
+          
         </View>
       </View>
+      <Voucher/>
     </View>
   );
 }
@@ -129,10 +139,11 @@ const styles = StyleSheet.create({
 
     },
     quantity:{
-        fontSize:20,
-        color:"#000",
-        marginLeft:5,
-        marginRight:5
+      height:40,
+      width:30, 
+      fontSize:16,
+      color:"#000",
+      paddingLeft:10,
     },
     wrapProduct:{
         flexDirection:'row',
@@ -143,12 +154,10 @@ const styles = StyleSheet.create({
         flexDirection:'row'
     },
     btnMP:{
-        height:30,
+        height:40,
         width:30,
-        borderWidth:1,
-        borderColor:'#ccc',
-        borderRadius:30,
-        alignSelf:'center'
+        justifyContent: 'center',
+        alignItems:'center',
     },
     icon:{
         alignSelf:'center',

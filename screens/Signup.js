@@ -7,6 +7,9 @@ import * as Yup from 'yup'
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from "@react-navigation/native";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { primaryColor } from "../assets/color";
+import { defaultImg } from "../assets/img/defaultImg";
 function Signup() {
     const [show, setShow] = useState(true)
     const navigation = useNavigation()
@@ -25,6 +28,9 @@ function Signup() {
           await firestore().collection('users').doc(email).set({
             email: email,
             userId: userId,
+            name:'',
+            address:[],
+            imageUrl:defaultImg
             // Các trường thông tin khác nếu cần
           });
       
@@ -48,7 +54,7 @@ function Signup() {
         <View style={styles.container}>
 
             <Image source={require('../assets/Tech.png')} style={styles.img}/>
-            <Text style={styles.title}>Create new account</Text>
+            <Text style={styles.title}>Tạo tài khoản mới</Text>
 
         <Formik 
             initialValues={{
@@ -100,31 +106,17 @@ function Signup() {
                 />
                 {touched.confirmpassword && errors.confirmpassword && <Text style={{ color: 'red',marginLeft:15 }}>{errors.confirmpassword}</Text>}
 
-                <Text 
-                style={styles.txtLink}
-                >Forgot password?</Text>
+              
     
-                <Button mode="contained" style={styles.btn} onPress={handleSubmit}>
+                <TouchableOpacity  style={styles.btn} onPress={handleSubmit}>
                     <Text style={styles.txtBtn}>Đăng ký</Text>
-                </Button>
+                </TouchableOpacity>
     
-                <Text style={{fontSize:20,color:'#000',alignSelf:'center', marginBottom:20}}>Or Sign up with</Text>
-    
-               <View style={styles.wrapBtn}>
-                    <Button mode="outlined"  style={styles.btnSocial}>
-                        <Icon name='google' size={20} color='#000'/>
-                    </Button>
-                    <Button mode="outlined"  style={styles.btnSocial}>
-                        <Icon name='facebook' size={20} color='#000'/>
-                    </Button>
-                    <Button mode="outlined"  style={styles.btnSocial}>
-                        <Icon name='twitter' size={20} color='#000'/>
-                    </Button>
-               </View>
+                
     
                 <View style={{alignItems:'center'}}>
                     <Text style={styles.txt}>
-                       Already have account? <Text style={styles.txtLink}>Sign in</Text>
+                       Đã có tài khoản? <Text onPress={()=>navigation.navigate('Login')} style={styles.txtLink}>Đăng nhập</Text>
                     </Text>
                 </View>
             </View>
@@ -170,14 +162,15 @@ const styles = StyleSheet.create({
         marginBottom:30
     },
     btn:{
-        borderRadius:0,
-        borderWidth:1,
-        backgroundColor:'#000',
+        height:50,
+        borderRadius:10,
+        backgroundColor:primaryColor,
         marginLeft:10,
         marginRight:10,
         marginBottom:20,
-        paddingTop:5,
-        paddingBottom:5
+        marginTop:20,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     txtBtn:{
         fontSize:20,

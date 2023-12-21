@@ -6,8 +6,11 @@ import Login from "./Login";
 import Signup from "./Signup";
 import Setting from "./Setting";
 import Search from "./Search";
-import Love from "./Love";
 import Categories from "./Categories";
+import SendPass from "./SendPass";
+import MySelf from "./MySelf";
+import Bills from "./Bills";
+import Comment from "./Comment";
 export {
     Login,
     Signup,
@@ -17,6 +20,10 @@ export {
     CheckOut,
     Setting,
     Search,
-    Love,
     Categories,
+    SendPass,
+    Bills,  
+    MySelf,
+Comment
+
 }

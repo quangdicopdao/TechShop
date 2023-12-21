@@ -2,6 +2,10 @@
     import {View, StyleSheet,Text, TouchableOpacity, ScrollView,FlatList} from 'react-native'
     import Icon from 'react-native-vector-icons/MaterialIcons'; 
     import { ItemCheckOut } from "../components";
+    import { useMyContextController } from "../providers";
+    import firestore from "@react-native-firebase/firestore";
+
+import { useNavigation } from "@react-navigation/native";
 
     function CheckOut({route}) {
         const { cartData, checkedItems, totalAmount } = route.params;
@@ -11,6 +15,10 @@
         const [totalShippingFee, setTotalShippingFee] = useState(feeShip);
         const [total, setTotal] = useState(totalProductAmount + totalShippingFee);
 
+        const [{userLogin}] = useMyContextController()
+        const {userId,phone,address,name} = userLogin
+
+        const navigation = useNavigation()
         useEffect(() => {
             // Tính tổng giá trị của tất cả sản phẩm
             const productAmount = cartData.reduce((acc, item) => acc + item.price , 0);
@@ -23,26 +31,58 @@
             console.log("Nhận dữ liệu trong CheckOut:", cartData, checkedItems, totalAmount);
         }, [cartData, checkedItems, totalAmount, totalShippingFee]);
 
-        // useEffect(() => {
-        //     // Xử lý dữ liệu ở đây
-        //     console.log("Received data in CheckOut:", cartData, checkedItems, totalAmount);
-        //   }, [cartData, checkedItems, totalAmount]);
+    
         const numberWithCommas = (number) => {
             return number.toLocaleString('vi-VN'); // 'vi-VN' là mã ngôn ngữ của Tiếng Việt
         };
+       //thanh toan
+        const createBill = async () => {
+            if (userLogin) {
+                const uid = userId;
+        
+                try {
+                    // Thêm sản phẩm vào collection bills
+                    const billRef = firestore().collection("bills").doc(); // Remove uid from here
+                    await billRef.set({
+                        uid: uid, // Add the uid field with the user's ID
+                        userName: name,
+                        userPhone: phone,
+                        userAddress: address,
+                        products: cartData,
+                        totalAmount,
+                        orderStatus: 'Chờ xác nhận',
+                        createdAt: firestore.FieldValue.serverTimestamp(),
+                    });
+        
+                    // Xóa các sản phẩm đã thanh toán khỏi collection carts
+                    const cartRef = firestore().collection("carts").doc(uid);
+                    const updatedCart = cartData.reduce((cart, item) => {
+                        cart[item.id] = firestore.FieldValue.delete();
+                        return cart;
+                    }, {});
+                    await cartRef.update(updatedCart);
+        
+                    // Chuyển hướng về màn hình thành công hoặc màn hình khác cần thiết
+                    navigation.navigate("Home");
+                } catch (error) {
+                    console.error("Lỗi khi tạo hóa đơn:", error);
+                }
+            }
+        };
+        
         return (
           <View style={{flex:1,backgroundColor:'#fff'}}>
-               <ScrollView >
                 {/* address */}
                                 <View style={{flexDirection:'row',alignItems:'center'}}>
                                     <Icon name='location-on' size={30} color='#000'/>
                                     <Text style={styles.title}>Địa chỉ giao hàng</Text>
                                 </View>
-                            <TouchableOpacity>
-                                <View style={{flexDirection:'row',alignItems:'center',borderBottomWidth:1,borderColor:'#ccc',paddingBottom:30,paddingTop:10}}>
+                            <TouchableOpacity onPress={()=>{navigation.navigate('MySelf')}}>
+                                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',borderBottomWidth:1,borderColor:'#ccc',paddingBottom:30,paddingTop:10}}>
                                     <View>
-                                        <Text style={styles.txtAD}>Việt Quang | 0359088784</Text>
-                                        <Text style={styles.txtAD}>nhà trọ Trí Nguyễn, 375 Bùi Quốc Khánh, Chánh Nghĩa, Thủ Dầu Một, Bình Dương</Text>
+                                        <Text style={styles.txtAD}>Họ và tên: {name}</Text>
+                                        <Text style={styles.txtAD}>Số điện thoại: {phone} </Text>
+                                        <Text style={styles.txtAD}>Địa chỉ: {address}</Text>
                                     </View>
                                     <Icon style={{padding:10}}><Icon name='keyboard-arrow-right' size={30} color='#ccc'/></Icon>
                                 </View>
@@ -84,14 +124,15 @@
                         </View>
                    </View>
                     
-               </ScrollView>
                {/* button */}
                <View style={{height:70,borderTopWidth:1,borderColor:'#ccc',flexDirection:'row'}}>
                     <View style={{flex:1,justifyContent:'space-around',alignItems:'flex-end'}}>
                         <Text style={{fontSize:16,marginRight:10}}>Tổng thanh toán:</Text>
-                        <Text style={{fontSize:20,marginRight:10,color:'red'}}>đ{numberWithCommas(2000000)}</Text>
+                        <Text style={{fontSize:20,marginRight:10,color:'red'}}>đ{numberWithCommas(total)}</Text>
                     </View>
-                    <TouchableOpacity style={{backgroundColor:'red',paddingLeft:20,paddingRight:20,justifyContent:'center'}}>
+                    <TouchableOpacity style={{backgroundColor:'red',paddingLeft:20,paddingRight:20,justifyContent:'center'}}
+                        onPress={createBill}
+                    >
                         <Text style={{fontSize:20,color:'#fff'}}>Đặt hàng</Text>
                     </TouchableOpacity>
                 </View>

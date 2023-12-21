@@ -2,6 +2,7 @@ import React from 'react';
 import {View,TouchableOpacity,TextInput,Image,Text} from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; 
 import { useNavigation } from '@react-navigation/native';
+import { primaryColor } from '../assets/color';
 
 function SearchHeader({searchKeyword,setSearchKeyword}) {
     const navigation = useNavigation();
@@ -31,30 +32,45 @@ function SearchHeader({searchKeyword,setSearchKeyword}) {
                     onPress={() => navigation.goBack()}
                 >
                     <Icon
-                        name='arrow-left' size={30} color='#000'
+                        name='arrow-left' size={30} color={primaryColor}
                     />
                 </TouchableOpacity>
                 <View style={{
                     flex: 1,
+                    height:40,
                     marginLeft: 20,
                     marginRight: 10,
                     flexDirection: 'row',
                     alignItems: 'center',
+                    borderRadius:10,
                     borderWidth: 1,
-                    borderColor: '#ccc',
+                    borderColor: primaryColor,
                 }}>
                     <TextInput
                         placeholder='Tìm thứ bạn muốn'
                         style={{
                             flex: 1,
+                            height: '100%',
                             backgroundColor: '#fff',
                             paddingLeft: 20,
+                            borderRadius:10
                         }}
                         value={searchKeyword}
-                        onChangeText={(text) => setSearchKeyword(text)}
+                        onChangeText={(text) => {setSearchKeyword(text)
+                        console.log(text)}}
                     />
-                    <TouchableOpacity>
-                        <Image source={require('../assets/test/searchicon.png')} style={{ height: 35, width: 35, marginRight: 10, }} />
+                    <TouchableOpacity 
+                    style={{height:40,
+                    width:40,
+                    backgroundColor:primaryColor,
+                     borderTopRightRadius:10,
+                     borderBottomRightRadius:10,
+                     alignItems:'center',
+                     justifyContent:'center',
+                     paddingLeft:10,
+                    }}>
+                        <Image source={require('../assets/test/searchicon.png')} 
+                        style={{ height: 35, width: 35, marginRight: 10,tintColor:'#fff' }} />
                     </TouchableOpacity>
                 </View>
             </View>

@@ -5,7 +5,7 @@ import { MyContextControllerProvider } from './providers';
 import { producData, categoriesData } from './data';
 import firestore from '@react-native-firebase/firestore'
 import  storage from '@react-native-firebase/storage'
-
+import { MySelf } from './screens';
 const db = firestore();
 const Users = db.collection('users');
 const Products = db.collection('products');
@@ -96,7 +96,7 @@ useEffect(() => {
   return (
     <MyContextControllerProvider>
       <SafeAreaProvider>
-        <RootNavigator />
+        <RootNavigator/>
       </SafeAreaProvider>
     </MyContextControllerProvider>
   );

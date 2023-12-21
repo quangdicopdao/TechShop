@@ -1,14 +1,20 @@
 import React, { useState,useEffect } from "react";
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity,FlatList,Image } from "react-native";
-import {Button} from 'react-native-paper'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; 
-import { CategoriesComp,ProductComp } from "../components";
+import { CategoriesComp,ProductHozi,Product } from "../components";
 import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
+import { useMyContextController } from '../providers'
+import { primaryColor, whiteColor } from "../assets/color";
 
 function Home() {
     const navigation = useNavigation();
     const [products, setProducts] = useState([]);
+   
+    const [{ userLogin }] = useMyContextController();
+    const { name } =  userLogin ;
+
+   
   const numberWithCommas = (number) => {
         return number.toLocaleString('vi-VN'); // 'vi-VN' là mã ngôn ngữ của Tiếng Việt
     };
@@ -29,38 +35,49 @@ function Home() {
       
       // Sử dụng state "products" trong các phần khác của component
       
+
+
     return ( 
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
         {/* header */}
+            <View style={{height:130, backgroundColor:primaryColor,flexDirection:'row',justifyContent:'space-between'}}>
+                <View>
+                    <Text style={{fontSize:18,fontWeight:'bold',color:'#fff',marginLeft:10, paddingTop:20}}>Chào mừng trở lại</Text>
+                    <Text style={{fontSize:20,fontWeight:'bold',color:'#fff',marginLeft:10}}>{name}</Text>
+                </View>
+                 <Image source={require('../assets/test/cat.jpg')} style={{height:60,width:60, borderRadius:60,marginTop:20, marginRight:10}}/>
+            </View>
         <View style={styles.wrapHeader}>
-                    <TouchableOpacity  style={styles.txtInputHeader} onPress={()=>{navigation.navigate('Search')}}>
-                        <Image source={require('../assets/test/searchicon.png')} style={{height:30,width:30,marginLeft:10}}/>
-                        <Text style={{color:'#000',fontSize:16,marginLeft:10}}>Tìm kiếm sản phẩm</Text>
-                    </TouchableOpacity>
-                    <Button mode="contained" style={styles.btnIcon} onPress={() => navigation.navigate('Cart')} >
-                        <Icon name='cart-outline' size={20} color='#000' />
-                    </Button>
+                   <View style={styles.wrapSearch}>
+                        <TouchableOpacity  style={styles.txtInputHeader} onPress={()=>{navigation.navigate('Search')}}>
+                            <Image source={require('../assets/test/searchicon.png')} style={{height:30,width:30,marginLeft:10}}/>
+                            <Text style={{color:'#000',fontSize:18,marginLeft:10}}>Tìm kiếm sản phẩm</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity  style={styles.btnIcon} onPress={() => navigation.navigate('Cart')} >
+                            <Icon name='cart-outline' size={25} color='#000' />
+                        </TouchableOpacity>
+                   </View>
         </View>
-                 <ScrollView>
                         {/* categories */}
                         <View style={styles.wrapCate} >
-                            <Text style={styles.titleTxt}>Danh mục</Text>
-                            <ScrollView contentContainerStyle={styles.wrapCompCate} horizontal>
+                            <Text style={styles.titleTxt}>Danh mục sản phẩm</Text>
+                            <View style={{flexDirection:'row'}} >
                                 <CategoriesComp name='Tai nghe' srcImg={require('../assets/test/tainghe.png')} category='TaiNghe'/>
                                 <CategoriesComp name='Chuột' srcImg={require('../assets/test/chuot.png')} category='Chuot'/>
                                 <CategoriesComp name='Laptop' srcImg={require('../assets/test/laptop.png')} category='Laptop'/>
                                 <CategoriesComp name='Bàn phím' srcImg={require('../assets/test/banphim.png')} category='BanPhim'/>
                                 <CategoriesComp name='Máy ảnh' srcImg={require('../assets/test/mayanh.png')} category='MayAnh'/>
-                            </ScrollView>
+                            </View>
                         </View>
-                        {/* load product */}
-                        <Text style={styles.titleTxt}>Đề xuất cho bạn</Text>
-                        <View style={styles.wrap}>
+                        {/* load vertical */}
+                        <Text style={styles.titleTxt}>Sản phẩm mới</Text>
+                        <ScrollView contentContainerStyle={{backgroundColor:whiteColor,height:180}} horizontal>
                             {products.map(product => (
-                                <ProductComp
+                                <Product
                                     key={product.id}
                                     name={product.productName}
                                     price={numberWithCommas(product.price)}
+                                    rate={product.rating}
                                     sold={product.sold}
                                     srcImg={product.imageUrl150}
                                     onClick={()=> (navigation.navigate('Details',{product}))}
@@ -68,48 +85,79 @@ function Home() {
                                         
                             ))}                     
                             
+                        </ScrollView>
+                        {/* load product */}
+                        <Text style={styles.titleTxt}>Đề xuất cho bạn</Text>
+                        <View style={styles.wrap}>
+                            {products.map(product => (
+                                <ProductHozi
+                                    key={product.id}
+                                    name={product.productName}
+                                    price={numberWithCommas(product.price)}
+                                    rate={product.rating}
+                                    srcImg={product.imageUrl150}
+                                    onClick={()=> (navigation.navigate('Details',{product}))}
+                                />        
+                                        
+                            ))}                     
+                            
                         </View>
-                 </ScrollView>
                     
-    </View>
+    </ScrollView>
      );
 }
 
 const styles = StyleSheet.create({
     container:{
         backgroundColor:'#fff',
-        flex:1
     },
     //header
     wrapHeader:{
         width:'100%',
-        height:'7%',
         flexDirection:'row',
-        marginTop:10
+        position:'relative',
+        top:-20,
+
+    },
+    wrapSearch:{
+        flex:1,
+        height:60,
+        marginLeft:10,
+        marginRight:10,
+        backgroundColor:'#fff',
+        flexDirection:'row',
+        justifyContent:'center',
+        alignItems:'center',
+        borderRadius:10,
+        shadowOffset:{width:10,height:10},
+        shadowOpacity:0.5,
+        shadowRadius:5,
+        elevation:5
     },
     txtInputHeader:{
         flex:1,
-        height:50,
-        marginLeft:10,
-        borderWidth:1,
-        borderColor:'#ccc',
+        height:60,
         backgroundColor:'#fff',
         flexDirection:'row',
         alignItems:'center',
-        borderRadius:2
+        borderRadius:10,
     },
     btnIcon:{
-        height:50,
-        alignSelf:'center',
-        backgroundColor:'transparent',
+        height:70,
+        width:70,
+        justifyContent:'center',
+        alignItems:'center',
+        overflow:'hidden',
+        borderLeftWidth:1,
+        borderColor:'rgba(0,0,0,0.1)'
     },
+
     //categories
     wrapCate:{
         width:'100%',
     },
     wrap:{
         width:'100%',
-        marginTop:10,
         flexDirection:'row',
         flexWrap:'wrap'
     },
@@ -119,7 +167,6 @@ const styles = StyleSheet.create({
         fontWeight:'bold',
         color:'#000',
         marginLeft:10,
-        marginBottom:10,
         marginTop:10
     }
 })

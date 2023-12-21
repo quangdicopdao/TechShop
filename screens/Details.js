@@ -13,13 +13,45 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
+import { textColor, whiteColor } from "../assets/color";
+import { CommentComp } from "../components";
 
 function Details({ route }) {
   const { product } = route.params;
   const navigation = useNavigation();
   const [isCart, setIsCart] = useState(true);
   const [cartCount, setCartCount] = useState(0);
-  const userId = auth().currentUser ? auth().currentUser.uid : null;
+  const userId = auth().currentUser && auth().currentUser.uid;
+
+  const [comments, setComments] = useState([]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        console.log('Fetching comments for productId:', typeof (product.id));
+        const commentsRef = firestore().collection('comments');
+        const snapshot = await commentsRef
+          .where('productId', '==', product.id)
+          .get();
+    
+        if (!snapshot.empty) {
+          const commentsData = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          console.log('Comments Data:', commentsData);
+          setComments(commentsData);
+        } else {
+          console.log('Không có dữ liệu từ comments collection cho sản phẩm này.');
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu từ comments collection:', error);
+      }
+    };
+    
+
+    fetchComments();
+  }, [product.id]);
 
   // Format số
   const numberWithCommas = (number) => {
@@ -59,22 +91,21 @@ function Details({ route }) {
   }, [userId]);
 
   const addToCart = async () => {
-    console.log("User: " + userId)
-  console.log('Product ID:', product.id);
+    console.log("User: " + userId);
+    console.log('Product ID:', product.id);
     try {
       const cartRef = firestore().collection('carts').doc(userId);
       const cartDoc = await cartRef.get();
-  
+
       if (!cartDoc.exists) {
-       
         // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
         cartRef.set({
           [product.id]: {
             name: product.productName,
             price: product.price,
-            shop:product.nameShop,
+            shop: product.nameShop,
             img: product.imageUrl150,
-            category:'đen',
+            category: 'đen',
             quantity: 1,
             // Thêm các thông tin khác của sản phẩm nếu cần
           },
@@ -82,14 +113,12 @@ function Details({ route }) {
       } else {
         // Nếu giỏ hàng đã tồn tại, kiểm tra sản phẩm đã có hay chưa
         const cartData = cartDoc.data();
-  
+
         if (cartData[product.id]) {
           const newQuantity = cartData[product.id].quantity + 1;
-        const newPrice = product.price * newQuantity;
+          const newPrice = product.price * newQuantity;
           // Nếu sản phẩm đã có trong giỏ, tăng số lượng lên 1
           cartRef.update({
-            // [`${product.id}.quantity`]: cartData[product.id].quantity + 1,
-            // [`${product.id}.price`]: cartData[product.id].price * cartData[product.id].quantity,
             [`${product.id}.quantity`]: newQuantity,
             [`${product.id}.price`]: newPrice,
           });
@@ -97,18 +126,18 @@ function Details({ route }) {
           // Nếu sản phẩm chưa có trong giỏ, thêm mới với số lượng là 1
           cartRef.update({
             [product.id]: {
-            name: product.productName,
-            price: product.price,
-            shop:product.nameShop,
-            img: product.imageUrl150,
-            category:'đen',
+              name: product.productName,
+              price: product.price,
+              shop: product.nameShop,
+              img: product.imageUrl150,
+              category: 'đen',
               quantity: 1,
               // Thêm các thông tin khác của sản phẩm nếu cần
             },
           });
         }
       }
-  
+      setCartCount(cartCount + 1);
       // Hiển thị thông báo hoặc thực hiện các hành động khác nếu cần
       Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào giỏ hàng.');
     } catch (error) {
@@ -117,8 +146,7 @@ function Details({ route }) {
       Alert.alert('Lỗi', 'Đã có lỗi xảy ra khi thêm vào giỏ hàng. Vui lòng thử lại.');
     }
   };
-  
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.navigator}>
@@ -131,7 +159,7 @@ function Details({ route }) {
 
         <View style={styles.cartAndMore}>
           <View style={styles.cartIconContainer}>
-            {isCart && (
+            {cartCount > 0 && (
               <Text style={styles.cartBadge}>{cartCount}</Text>
             )}
             <TouchableOpacity
@@ -148,35 +176,50 @@ function Details({ route }) {
               // Thêm chức năng xử lý khi nhấn vào biểu tượng more
             }}
           >
-            <Icon name="unfold-more-vertical" size={30} color="#000" />
+            <Image source={require('../assets/test/more.jpg')} style={{ height: 30, width: 30 }} />
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.wrapAll}>
-        <Image style={styles.backgroundImage} source={{ uri: product.imageUrl400 }} />
+        <View style={{ backgroundColor: whiteColor, paddingBottom: 20, paddingLeft: 10, paddingRight: 10 }}>
+          <Image style={styles.backgroundImage} source={{ uri: product.imageUrl400 }} />
 
-        <Text style={{ color: 'red', fontSize: 25 }}>đ{numberWithCommas(product.price)}</Text>
-        <Text style={styles.name}>{product.productName}</Text>
-        <View style={styles.wrap}>
+          <Text style={{ color: 'red', fontSize: 25 }}>đ{numberWithCommas(product.price)}</Text>
+          <Text style={styles.name}>{product.productName}</Text>
+          <View style={styles.wrap}>
 
-          {/* rating */}
-          <StarRatingDisplay
-            style={styles.starRating}
-            rating={product.rating}
-            starSize={25}
-          />
-          <Text>Đã bán : {product.sold}</Text>
-          <TouchableOpacity>
-            <Icon name='facebook-messenger' size={25} color='#000' />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Icon name='share' size={25} color='#000' />
-          </TouchableOpacity>
+            {/* rating */}
+            <StarRatingDisplay
+              style={styles.starRating}
+              rating={product.rating}
+              starSize={25}
+            />
+            <Text>Đã bán : {product.sold}</Text>
+            <TouchableOpacity>
+              <Icon name='facebook-messenger' size={25} color='#000' />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Icon name='share' size={25} color='#000' />
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={{marginTop:20}}>
-            <Text style={{fontSize:18,color:'#000'}}>Mô tả sản phẩm</Text>
-            <Text style={{fontSize:16, marginTop:5}}>{product.description}</Text>
+        <View style={{ marginTop: 20, backgroundColor: whiteColor, padding: 10 }}>
+          <Text style={{ fontSize: 18, color: textColor, fontWeight: 'bold' }}>Mô tả sản phẩm</Text>
+          <Text style={{ fontSize: 16, marginTop: 5 }}>{product.description}</Text>
+        </View>
+        {/* comment */}
+        <View style={{ marginTop: 20, backgroundColor: whiteColor, padding: 10 }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: textColor }}>Đánh giá sản phẩm</Text>
+          {comments.map((comment) => (
+            <CommentComp
+              key={comment.id}
+              name={comment.user}
+              starRating={comment.rating}
+              text={comment.reviewText}
+              imgUrl={comment.imageUrl}
+            />
+          ))}
         </View>
       </ScrollView>
       <View style={styles.wrapBtn}>
@@ -186,7 +229,27 @@ function Details({ route }) {
             Thêm vào giỏ
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnBuy}>
+        <TouchableOpacity
+          style={styles.btnBuy}
+          onPress={() => {
+            navigation.navigate("CheckOut", {
+              cartData: [
+                {
+                  id: product.id,
+                  name: product.productName,
+                  price: product.price,
+                  shop: product.nameShop,
+                  img: product.imageUrl150,
+                  category: 'đen',
+                  quantity: 1,
+                },
+                // Các thông tin khác nếu cần
+              ],
+              checkedItems: [product.id],
+              totalAmount: product.price,
+            });
+          }}
+        >
           <Icon name='hand-coin' size={25} color='#fff' />
           <Text style={{ fontSize: 18, color: '#fff', marginRight: 20 }}>
             Mua ngay
@@ -200,19 +263,23 @@ function Details({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,240,0.1)',
   },
   navigator: {
     flexDirection: 'row',
-    height: 80,
-    backgroundColor: 'rgba(255,255,240,0.1)',
+    height: 60,
+    zIndex: 1,
+    shadowOffset: { width: 10, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 5,
+    backgroundColor: whiteColor,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   backButton: {
     position: 'relative',
     left: 20,
-    backgroundColor: 'rgba(211,211,211,0.3)',
     borderRadius: 30,
     padding: 5,
   },
@@ -229,7 +296,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(211,211,211,0.5)',
     borderRadius: 30,
     padding: 5,
     marginRight: 10,
@@ -251,18 +317,18 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(211,211,211,0.5)',
     borderRadius: 30,
     padding: 5,
     marginRight: 10,
   },
   wrapAll: {
-    marginLeft: 10,
-    marginRight: 10,
+
   },
   backgroundImage: {
     height: 400,
     width: 400,
+    position: 'relative',
+    top: -50,
   },
   starRating: {},
   wrap: {

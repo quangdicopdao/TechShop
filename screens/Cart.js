@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity,FlatList } from "react-native";
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity,FlatList,Image } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import auth from "@react-native-firebase/auth";
@@ -11,6 +11,7 @@ function Cart() {
   const [checkedAll, setCheckedAll] = useState(false);
   const [checkedItems, setCheckedItems] = useState([]);
   const [cartData, setCartData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Format số
   const numberWithCommas = (number) => {
@@ -38,6 +39,7 @@ function Cart() {
           });
           setCartData(cartItems);
         }
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching cart data:", error);
       }
@@ -47,6 +49,12 @@ function Cart() {
   useEffect(() => {
     loadCartData();
   }, []);
+  // useEffect(() => {
+  //   if (cartData.length === 0) {
+  //     loadCartData();
+  //   }
+  // }, []);
+  
   
   // Hàm check hết
   const toggleCheckItem = (index) => {
@@ -56,12 +64,14 @@ function Cart() {
     setCheckedAll(updatedCheckedItems.every((item) => item));
   };
 
+ 
+
   // Hàm check tất cả
-  const toggleCheckAll = () => {
-    const updatedCheckedItems = cartData.map((_, index) => !checkedAll);
-    setCheckedItems(updatedCheckedItems);
-    setCheckedAll(!checkedAll);
-  };
+const toggleCheckAll = () => {
+  const updatedCheckedItems = cartData.map((_, index) => !checkedAll);
+  setCheckedItems(updatedCheckedItems);
+  setCheckedAll(!checkedAll);
+};
 
   const totalAmount = checkedItems.reduce((total, isChecked, index) => {
     return total + (isChecked ? cartData[index]?.price || 0 : 0);
@@ -127,46 +137,36 @@ function Cart() {
     }
   };
   
-  return (
-    <View style={{ flex: 1, backgroundColor: "rgba(211,211,211,0.2)" }}>
-      {/* <ScrollView contentContainerStyle={styles.container}>
-        {cartData.map((cartItem, index) => (
+
+
+return (
+  <View style={{ flex: 1, backgroundColor: '#fff' }}>
+
+    {isLoading ?(<></>
+    ):
+    cartData.length > 0  ? (
+      <>
+      <FlatList
+        data={cartData}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item, index }) => (
           <ItemCart
             key={index}
-            productId={cartItem.id}
-            namePro={cartItem.name}
-            nameShop={cartItem.shop}
-            category={cartItem.category}
-            price={cartItem.price}
-            proquantity={cartItem.quantity}
-            srcImg={cartItem.img}
+            productId={item.id}
+            namePro={item.name}
+            nameShop={item.shop}
+            category={item.category}
+            price={item.price}
+            proquantity={item.quantity}
+            srcImg={item.img}
             isChecked={checkedItems[index]}
-            onRemove={()=>removeItem(cartItem.id)}
+            onRemove={() => removeItem(item.id)}
             updateCartItem={updateCartItem}
             onToggleCheck={() => toggleCheckItem(index)}
           />
-        ))}
-      </ScrollView> */}
-      <FlatList
-  data={cartData}
-  keyExtractor={(item) => item.id.toString()}
-  renderItem={({ item, index }) => (
-    <ItemCart
-      key={index}
-      productId={item.id}
-      namePro={item.name}
-      nameShop={item.shop}
-      category={item.category}
-      price={item.price}
-      proquantity={item.quantity}
-      srcImg={item.img}
-      isChecked={checkedItems[index]}
-      onRemove={() => removeItem(item.id)}
-      updateCartItem={updateCartItem}
-      onToggleCheck={() => toggleCheckItem(index)}
-    />
-  )}
-/>
+        )}
+      />
+      {/* ... Các thành phần khác của giỏ hàng ... */}
       <View style={styles.wrapCheckOut}>
         <View style={styles.wraptxt}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -188,14 +188,30 @@ function Cart() {
         <TouchableOpacity
           style={styles.wrapBtn}
           onPress={() => {
-            navigation.navigate("CheckOut",{ cartData, checkedItems, totalAmount });
+            const checkedItemIds = cartData
+              .filter((_, index) => checkedItems[index])
+              .map((item) => item.id);
+
+            navigation.navigate("CheckOut", {
+              cartData: checkedItemIds.length > 0 ? cartData.filter((_, index) => checkedItems[index]) : cartData,
+              checkedItems: checkedItemIds,
+              totalAmount,
+            });
           }}
         >
           <Text style={{ color: "#fff", fontSize: 16 }}>Mua hàng</Text>
         </TouchableOpacity>
       </View>
-    </View>
-  );
+    </>
+    ) : (
+      <View style={{justifyContent:'center',alignItems:'center',marginTop:20}}>
+        <Image source={require('../assets/test/cart_empty.png')} style={{height:300, width:300}}/>
+        <Text style={{ fontSize: 18, textAlign: "center",marginTop:10 }}>Giỏ hàng trống</Text>
+      </View>
+    )}
+  </View>
+);
+
 }
 
 const styles = StyleSheet.create({

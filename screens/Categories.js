@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View,StyleSheet } from "react-native";
-import { SearchHeader } from "../components";
+import { SearchClick } from "../components";
 import { Divider } from "react-native-paper";
-import ProductComp from "../components/ProductComp"; 
+import ProductComp from "../components/ProductHozi"; 
 import { useNavigation } from "@react-navigation/native";
 
 import firestore from '@react-native-firebase/firestore';
@@ -40,7 +40,7 @@ function Categories({ route }) {
 
   return (
     <View style={{ backgroundColor: '#fff', flex: 1 }}>
-      <SearchHeader />
+      <SearchClick />
       <Divider />
       <View style={styles.wrap}>
         {products.map(product => (
