@@ -15,6 +15,7 @@ import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
 import { textColor, whiteColor } from "../assets/color";
 import { CommentComp } from "../components";
+import { useMyContextController } from "../providers";
 
 function Details({ route }) {
   const { product } = route.params;
@@ -22,7 +23,8 @@ function Details({ route }) {
   const [isCart, setIsCart] = useState(true);
   const [cartCount, setCartCount] = useState(0);
   const userId = auth().currentUser && auth().currentUser.uid;
-
+  const [{userLogin}] = useMyContextController()
+  const {id} = userLogin
   const [comments, setComments] = useState([]);
 
   useEffect(() => {
@@ -90,62 +92,136 @@ function Details({ route }) {
     }
   }, [userId]);
 
+  // const addToCart = async () => {
+  //   console.log("User: " + userId);
+  //   console.log('Product ID:', product.id);
+  //   try {
+  //     const cartRef = firestore().collection('carts').doc(userId);
+  //     const cartDoc = await cartRef.get();
+
+  //     if (!cartDoc.exists) {
+  //       // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
+  //       cartRef.set({
+  //         [product.id]: {
+  //           name: product.productName,
+  //           price: product.price,
+  //           shop: product.nameShop,
+  //           img: product.imageUrl150,
+  //           category: 'đen',
+  //           quantity: 1,
+  //           // Thêm các thông tin khác của sản phẩm nếu cần
+  //         },
+  //       });
+  //     } else {
+  //       // Nếu giỏ hàng đã tồn tại, kiểm tra sản phẩm đã có hay chưa
+  //       const cartData = cartDoc.data();
+
+  //       if (cartData[product.id]) {
+  //         const newQuantity = cartData[product.id].quantity + 1;
+  //         const newPrice = product.price * newQuantity;
+  //         // Nếu sản phẩm đã có trong giỏ, tăng số lượng lên 1
+  //         cartRef.update({
+  //           [`${product.id}.quantity`]: newQuantity,
+  //           [`${product.id}.price`]: newPrice,
+  //         });
+  //       } else {
+  //         // Nếu sản phẩm chưa có trong giỏ, thêm mới với số lượng là 1
+  //         cartRef.update({
+  //           [product.id]: {
+  //             name: product.productName,
+  //             price: product.price,
+  //             shop: product.nameShop,
+  //             img: product.imageUrl150,
+  //             category: 'đen',
+  //             quantity: 1,
+  //             // Thêm các thông tin khác của sản phẩm nếu cần
+  //           },
+  //         });
+  //       }
+  //     }
+  //     setCartCount(cartCount + 1);
+  //     // Hiển thị thông báo hoặc thực hiện các hành động khác nếu cần
+  //     Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào giỏ hàng.');
+  //   } catch (error) {
+  //     console.error('Lỗi khi thêm vào giỏ hàng:', error);
+  //     // Xử lý lỗi hoặc hiển thị thông báo lỗi cho người dùng
+  //     Alert.alert('Lỗi', 'Đã có lỗi xảy ra khi thêm vào giỏ hàng. Vui lòng thử lại.');
+  //   }
+  // };
   const addToCart = async () => {
-    console.log("User: " + userId);
-    console.log('Product ID:', product.id);
     try {
-      const cartRef = firestore().collection('carts').doc(userId);
-      const cartDoc = await cartRef.get();
-
-      if (!cartDoc.exists) {
-        // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
-        cartRef.set({
-          [product.id]: {
-            name: product.productName,
-            price: product.price,
-            shop: product.nameShop,
-            img: product.imageUrl150,
-            category: 'đen',
-            quantity: 1,
-            // Thêm các thông tin khác của sản phẩm nếu cần
-          },
-        });
-      } else {
-        // Nếu giỏ hàng đã tồn tại, kiểm tra sản phẩm đã có hay chưa
-        const cartData = cartDoc.data();
-
-        if (cartData[product.id]) {
-          const newQuantity = cartData[product.id].quantity + 1;
-          const newPrice = product.price * newQuantity;
-          // Nếu sản phẩm đã có trong giỏ, tăng số lượng lên 1
-          cartRef.update({
-            [`${product.id}.quantity`]: newQuantity,
-            [`${product.id}.price`]: newPrice,
-          });
+      let userIdentifier;
+  
+      // Kiểm tra xem đang đăng nhập bằng Google hay email
+      if (userLogin) {
+        if (userId) {
+          // Nếu userId tồn tại, đó là đăng nhập bằng email
+          userIdentifier = userId;
+        } else if (id) {
+          // Nếu id (Google ID) tồn tại, đó là đăng nhập bằng Google
+          userIdentifier = id;
+        }
+        console.log(userIdentifier);
+  
+        // Kiểm tra xem userIdentifier có tồn tại không trước khi sử dụng
+        if (userIdentifier) {
+          const cartRef = firestore().collection("carts").doc(userIdentifier);
+          const cartDoc = await cartRef.get();
+  
+          if (!cartDoc.exists) {
+            // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
+            cartRef.set({
+              [product.id]: {
+                name: product.productName,
+                price: product.price,
+                shop: product.nameShop,
+                img: product.imageUrl150,
+                category: 'đen',
+                quantity: 1,
+                // Thêm các thông tin khác của sản phẩm nếu cần
+              },
+            });
+          } else {
+            // Nếu giỏ hàng đã tồn tại, kiểm tra sản phẩm đã có hay chưa
+            const cartData = cartDoc.data();
+  
+            if (cartData[product.id]) {
+              const newQuantity = cartData[product.id].quantity + 1;
+              const newPrice = product.price * newQuantity;
+              // Nếu sản phẩm đã có trong giỏ, tăng số lượng lên 1
+              cartRef.update({
+                [`${product.id}.quantity`]: newQuantity,
+                [`${product.id}.price`]: newPrice,
+              });
+            } else {
+              // Nếu sản phẩm chưa có trong giỏ, thêm mới với số lượng là 1
+              cartRef.update({
+                [product.id]: {
+                  name: product.productName,
+                  price: product.price,
+                  shop: product.nameShop,
+                  img: product.imageUrl150,
+                  category: 'đen',
+                  quantity: 1,
+                  // Thêm các thông tin khác của sản phẩm nếu cần
+                },
+              });
+            }
+          }
+          setCartCount(cartCount + 1);
+          // Hiển thị thông báo hoặc thực hiện các hành động khác nếu cần
+          Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào giỏ hàng.');
         } else {
-          // Nếu sản phẩm chưa có trong giỏ, thêm mới với số lượng là 1
-          cartRef.update({
-            [product.id]: {
-              name: product.productName,
-              price: product.price,
-              shop: product.nameShop,
-              img: product.imageUrl150,
-              category: 'đen',
-              quantity: 1,
-              // Thêm các thông tin khác của sản phẩm nếu cần
-            },
-          });
+          console.error("userId và id đều không tồn tại.");
         }
       }
-      setCartCount(cartCount + 1);
-      // Hiển thị thông báo hoặc thực hiện các hành động khác nếu cần
-      Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào giỏ hàng.');
     } catch (error) {
       console.error('Lỗi khi thêm vào giỏ hàng:', error);
       // Xử lý lỗi hoặc hiển thị thông báo lỗi cho người dùng
       Alert.alert('Lỗi', 'Đã có lỗi xảy ra khi thêm vào giỏ hàng. Vui lòng thử lại.');
     }
   };
+  
 
   return (
     <View style={styles.container}>

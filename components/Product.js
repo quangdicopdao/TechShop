@@ -29,13 +29,13 @@ const styles = StyleSheet.create({
         shadowOffset:{width:10,height:10},
         shadowOpacity:0.5,
         shadowRadius:5,
-        elevation:5
+        elevation:2
     },
    img:{
     width:150,
     height:150,
     marginLeft:10,
-    marginRight:20
+    marginRight:10
    }
 })
 export default Product;

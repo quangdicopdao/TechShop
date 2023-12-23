@@ -13,7 +13,7 @@ import { PermissionsAndroid } from 'react-native';
 import { FieldPath } from '@firebase/firestore';
 function Setting() {
     const [{ userLogin }] = useMyContextController();
-    const { name,imageUrl,email } = userLogin;
+    const { name,imageUrl,email,photo } = userLogin;
     
     const navigation = useNavigation()
     const [img, setImg] = useState('')
@@ -79,10 +79,20 @@ function Setting() {
                 {/* image */}
     
                 <View style={{ alignItems:'center',height:300,paddingTop:20}}>
-                    {/* {imageUrl ? (<Image source={{uri:imageUrl}} style={{height:150,width:150, borderRadius:100,borderWidth:5,borderColor:'#ccc'}}/>): 
-                    ({img ? (<Image source={{uri:img}} style={{height:150,width:150, borderRadius:100,borderWidth:5,borderColor:'#ccc'}}/>) :
-                    (<Image source={require('../assets/test/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA2L3Y5MzctYWV3LTE2NS5qcGc.png')} style={{height:150,width:150, borderRadius:100,borderWidth:5,borderColor:'#ccc' }}/>)})} */}
-                    {imageUrl ? (
+                    {photo ?
+                     (
+                      <Image
+    source={{ uri: photo }}
+    style={{
+      height: 150,
+      width: 150,
+      borderRadius: 100,
+      borderWidth: 5,
+      borderColor: '#ccc'
+    }}
+  />
+                     ):
+                    imageUrl ? (
   <Image
     source={{ uri: imageUrl }}
     style={{
@@ -116,9 +126,9 @@ function Setting() {
     }}
   />
 )}
-
                     
-                    
+                    {photo ? (<></>):
+                    (
                     <TouchableOpacity 
                     onPress={requestCameraPermission}
                     style={{
@@ -127,6 +137,7 @@ function Setting() {
                     }}>
                         <Icon name='camera' size={30} color='#fff'/>
                     </TouchableOpacity>
+                    )}
                     <View style={{justifyContent:'center',alignItems:'center'}}>
                         <Text style={{fontSize:20,fontWeight:'bold',color:'#fff'}}>{name}</Text>
                            <View style={{flexDirection:'row'}}>

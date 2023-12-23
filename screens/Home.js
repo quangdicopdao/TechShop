@@ -7,14 +7,14 @@ import firestore from '@react-native-firebase/firestore';
 import { useMyContextController } from '../providers'
 import { primaryColor, whiteColor } from "../assets/color";
 
-function Home() {
+function Home({route}) {
     const navigation = useNavigation();
     const [products, setProducts] = useState([]);
-   
-    const [{ userLogin }] = useMyContextController();
-    const { name } =  userLogin ;
 
-   
+
+    const [{ userLogin }] = useMyContextController();
+    const { name,photo,displayName,photoURL } =  userLogin ;
+    
   const numberWithCommas = (number) => {
         return number.toLocaleString('vi-VN'); // 'vi-VN' là mã ngôn ngữ của Tiếng Việt
     };
@@ -43,9 +43,15 @@ function Home() {
             <View style={{height:130, backgroundColor:primaryColor,flexDirection:'row',justifyContent:'space-between'}}>
                 <View>
                     <Text style={{fontSize:18,fontWeight:'bold',color:'#fff',marginLeft:10, paddingTop:20}}>Chào mừng trở lại</Text>
-                    <Text style={{fontSize:20,fontWeight:'bold',color:'#fff',marginLeft:10}}>{name}</Text>
+                    <Text style={{fontSize:20,fontWeight:'bold',color:'#fff',marginLeft:10}}>{displayName || name || ''}</Text>
                 </View>
-                 <Image source={require('../assets/test/cat.jpg')} style={{height:60,width:60, borderRadius:60,marginTop:20, marginRight:10}}/>
+                {photoURL ? 
+                    (<Image source={{uri:photoURL}} style={{height:60,width:60, borderRadius:60,marginTop:20, marginRight:10}}/>):
+                photo ?(<Image source={{uri:photo}} style={{height:60,width:60, borderRadius:60,marginTop:20, marginRight:10}}/>):
+                (
+
+                    <Image source={require('../assets/test/cat.jpg')} style={{height:60,width:60, borderRadius:60,marginTop:20, marginRight:10}}/>
+                )}
             </View>
         <View style={styles.wrapHeader}>
                    <View style={styles.wrapSearch}>

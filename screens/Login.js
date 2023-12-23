@@ -1,69 +1,66 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Image, Text } from "react-native";
+import { View, StyleSheet, Image, Text, Alert } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
-import { useMyContextController, login } from "../providers";
+import { useMyContextController, login,onGoogleButtonPress,onFacebookButtonPress } from "../providers";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { primaryColor } from "../assets/color";
 import auth from '@react-native-firebase/auth';
-import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 
 function Login() {
   const navigation = useNavigation();
   const [show, setShow] = useState(true);
   const [controller, dispatch] = useMyContextController();
   const { userLogin } = controller;
-
   
-
-  async function onFacebookButtonPress() {
-    try {
-      // Đăng nhập với Facebook và lấy kết quả
-      const result = await LoginManager.logInWithPermissions(['public_profile', 'email']);
+  // async function onFacebookButtonPress() {
+  //   try {
+  //     // Đăng nhập với Facebook và lấy kết quả
+  //     const result = await LoginManager.logInWithPermissions(['public_profile', 'email']);
   
-      // Kiểm tra nếu người dùng hủy đăng nhập
-      if (result.isCancelled) {
-        throw new Error('User cancelled the login process');
-      }
+  //     // Kiểm tra nếu người dùng hủy đăng nhập
+  //     if (result.isCancelled) {
+  //       throw new Error('User cancelled the login process');
+  //     }
   
-      // Lấy thông tin Access Token
-      const data = await AccessToken.getCurrentAccessToken();
+  //     // Lấy thông tin Access Token
+  //     const data = await AccessToken.getCurrentAccessToken();
   
-      // Kiểm tra nếu không có Access Token
-      if (!data) {
-        throw new Error('Something went wrong obtaining access token');
-      }
+  //     // Kiểm tra nếu không có Access Token
+  //     if (!data) {
+  //       throw new Error('Something went wrong obtaining access token');
+  //     }
   
-      // Lấy Facebook Credential từ Access Token
-      const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken);
+  //     // Lấy Facebook Credential từ Access Token
+  //     const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken);
   
-      // Kiểm tra xem có người dùng hiện tại hay không
-      const currentUser = auth().currentUser;
+  //     // Kiểm tra xem có người dùng hiện tại hay không
+  //     const currentUser = auth().currentUser;
   
-      if (currentUser) {
-        // Nếu có người dùng hiện tại, kiểm tra xem họ đã liên kết với Facebook chưa
-        const linkedProviders = await currentUser.providerData.map((provider) => provider.providerId);
+  //     if (currentUser) {
+  //       // Nếu có người dùng hiện tại, kiểm tra xem họ đã liên kết với Facebook chưa
+  //       const linkedProviders = await currentUser.providerData.map((provider) => provider.providerId);
   
-        if (linkedProviders.includes('facebook.com')) {
-          console.log('User is already linked with Facebook');
-        } else {
-          // Nếu chưa liên kết, thực hiện liên kết với Facebook
-          await currentUser.linkWithCredential(facebookCredential);
-        }
+  //       if (linkedProviders.includes('facebook.com')) {
+  //         console.log('User is already linked with Facebook');
+  //       } else {
+  //         // Nếu chưa liên kết, thực hiện liên kết với Facebook
+  //         await currentUser.linkWithCredential(facebookCredential);
+  //       }
   
       
-        navigation.navigate('Home');
-      } else {
-        // Nếu không có người dùng hiện tại, đăng nhập với Facebook Credential
-        await auth().signInWithCredential(facebookCredential);
-      }
-    } catch (error) {
-      console.error('Facebook login error:', error);
-      // Xử lý lỗi và hiển thị thông báo lỗi cho người dùng
-      // Ví dụ: alert('Đã xảy ra lỗi khi đăng nhập bằng Facebook');
-    }
-  }
+  //       navigation.navigate('Home');
+  //     } else {
+  //       // Nếu không có người dùng hiện tại, đăng nhập với Facebook Credential
+  //       await auth().signInWithCredential(facebookCredential);
+  //     }
+  //   } catch (error) {
+  //     console.error('Facebook login error:', error);
+  //     // Xử lý lỗi và hiển thị thông báo lỗi cho người dùng
+  //     // Ví dụ: alert('Đã xảy ra lỗi khi đăng nhập bằng Facebook');
+  //   }
+  // }
   
   
   
@@ -75,6 +72,12 @@ function Login() {
     }
   }, [userLogin]);
 
+  const handleGGLogin = () => {
+    onGoogleButtonPress(dispatch)
+  }
+  const handleFBLogin = () => {
+    onFacebookButtonPress(dispatch)
+  }
   const handleLogin = (values) => {
     const { email, password } = values;
     login(dispatch, email, password);
@@ -128,17 +131,13 @@ function Login() {
             <Text style={{ fontSize: 20, color: "#000", alignSelf: "center", marginBottom: 20 }}>Hoặc</Text>
 
             <View style={styles.wrapBtn}>
-              <TouchableOpacity style={styles.btnSocial}>
+              <TouchableOpacity 
+              onPress={handleGGLogin}
+              style={styles.btnSocial}>
                 <Image source={require("../assets/test/gg-removebg-preview.png")} style={styles.imgBtn} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.btnSocial}  onPress={async () => {
-  try {
-    await onFacebookButtonPress();
-  } catch (error) {
-    console.error('Facebook login error:', error);
-    // Hiển thị thông báo lỗi cho người dùng
-  }
-}}>
+              <TouchableOpacity style={styles.btnSocial}  onPress={handleFBLogin}
+>
                 <Image source={require("../assets/test/fb-removebg-preview.png")} style={styles.imgBtn} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.btnSocial}>

@@ -16,7 +16,7 @@ import { useNavigation } from "@react-navigation/native";
         const [total, setTotal] = useState(totalProductAmount + totalShippingFee);
 
         const [{userLogin}] = useMyContextController()
-        const {userId,phone,address,name} = userLogin
+        const {userId,phone,address,name,id,uid} = userLogin
 
         const navigation = useNavigation()
         useEffect(() => {
@@ -36,39 +36,94 @@ import { useNavigation } from "@react-navigation/native";
             return number.toLocaleString('vi-VN'); // 'vi-VN' là mã ngôn ngữ của Tiếng Việt
         };
        //thanh toan
-        const createBill = async () => {
-            if (userLogin) {
-                const uid = userId;
+        // const createBill = async () => {
+        //     if (userLogin) {
+        //         if (userId) {
+        //             // Nếu userId tồn tại, đó là đăng nhập bằng email
+        //             userIdentifier = userId;
+        //         } else if (id) {
+        //             // Nếu id (Google ID) tồn tại, đó là đăng nhập bằng Google
+        //             userIdentifier = id;
+        //         }
+        //         try {
+        //             // Thêm sản phẩm vào collection bills
+        //             const billRef = firestore().collection("bills").doc(); // Remove uid from here
+        //             await billRef.set({
+        //                 uid: userIdentifier, // Add the uid field with the user's ID
+        //                 userName: name,
+        //                 userPhone: phone,
+        //                 userAddress: address,
+        //                 products: cartData,
+        //                 totalAmount,
+        //                 orderStatus: 'Chờ xác nhận',
+        //                 createdAt: firestore.FieldValue.serverTimestamp(),
+        //             });
         
-                try {
-                    // Thêm sản phẩm vào collection bills
-                    const billRef = firestore().collection("bills").doc(); // Remove uid from here
-                    await billRef.set({
-                        uid: uid, // Add the uid field with the user's ID
-                        userName: name,
-                        userPhone: phone,
-                        userAddress: address,
-                        products: cartData,
-                        totalAmount,
-                        orderStatus: 'Chờ xác nhận',
-                        createdAt: firestore.FieldValue.serverTimestamp(),
-                    });
+        //             // Xóa các sản phẩm đã thanh toán khỏi collection carts
+        //             const cartRef = firestore().collection("carts").doc(uid);
+        //             const updatedCart = cartData.reduce((cart, item) => {
+        //                 cart[item.id] = firestore.FieldValue.delete();
+        //                 return cart;
+        //             }, {});
+        //             await cartRef.update(updatedCart);
         
-                    // Xóa các sản phẩm đã thanh toán khỏi collection carts
-                    const cartRef = firestore().collection("carts").doc(uid);
-                    const updatedCart = cartData.reduce((cart, item) => {
-                        cart[item.id] = firestore.FieldValue.delete();
-                        return cart;
-                    }, {});
-                    await cartRef.update(updatedCart);
-        
-                    // Chuyển hướng về màn hình thành công hoặc màn hình khác cần thiết
-                    navigation.navigate("Home");
-                } catch (error) {
-                    console.error("Lỗi khi tạo hóa đơn:", error);
-                }
+        //             // Chuyển hướng về màn hình thành công hoặc màn hình khác cần thiết
+        //             navigation.navigate("Home");
+        //         } catch (error) {
+        //             console.error("Lỗi khi tạo hóa đơn:", error);
+        //         }
+        //     }
+        // };
+        // Thay đổi đoạn code này trong hàm createBill
+const createBill = async () => {
+    try {
+        let userIdentifier;
+
+        // Kiểm tra xem đang đăng nhập bằng Google hay email
+        if (userLogin) {
+            if (userId) {
+                // Nếu userId tồn tại, đó là đăng nhập bằng email
+                userIdentifier = userId;
+            } else if (id) {
+                // Nếu id (Google ID) tồn tại, đó là đăng nhập bằng Google
+                userIdentifier = id;
+            }   
+            else if(uid){
+                userIdentifier = uid;
             }
-        };
+            console.log(userIdentifier)
+
+            // Kiểm tra xem userIdentifier có tồn tại không trước khi sử dụng
+            if (userIdentifier) {
+                const billRef = firestore().collection("bills").doc();
+                await billRef.set({
+                    uid: userIdentifier,
+                    userName: name ,
+                    userPhone: phone,
+                    userAddress: address,
+                    products: cartData,
+                    totalAmount,
+                    orderStatus: 'Chờ xác nhận',
+                    createdAt: firestore.FieldValue.serverTimestamp(),
+                });
+
+                const cartRef = firestore().collection("carts").doc(userIdentifier);
+                const updatedCart = cartData.reduce((cart, item) => {
+                    cart[item.id] = firestore.FieldValue.delete();
+                    return cart;
+                }, {});
+                await cartRef.update(updatedCart);
+
+                navigation.navigate("Home");
+            } else {
+                console.error("userId và id đều không tồn tại.");
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi khi tạo hóa đơn:", error);
+    }
+};
+
         
         return (
           <View style={{flex:1,backgroundColor:'#fff'}}>
